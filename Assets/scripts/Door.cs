@@ -4,65 +4,85 @@ using UnityEngine;
 
 public class Door : MonoBehaviour
 {
+    // Door states and UI components
+    public GameObject door_closed, door_opened, intText, lockedtext;
+    // Audio sources for opening and closing sounds
+    public AudioSource open, close;
+    // State of the door (opened/closed) and its lock
+    public bool opened, locked;
+    // State of the player having a key
+    public bool hasKey = false;  
 
-public GameObject door_closed, door_opened, intText, lockedtext;
-public AudioSource open, close;
-public bool opened, locked;
-public bool hasKey = false;  
-
-void OnTriggerStay (Collider other) { 
-    Debug.Log("Inside the trigger");
-    if (other.CompareTag ("MainCamera")){
-        if (opened == false) {
-            if (locked == false){
-                intText.SetActive (true);
-                if (Input.GetKeyDown (KeyCode.E)) {
-                    Debug.Log("E key pressed");
-                    door_closed.SetActive (false);
-                    door_opened.SetActive (true); 
-                    intText.SetActive (false);
-                    StartCoroutine (repeat ());
-                    opened = true;
+    // Triggers when player is near the door (stays within the collider)
+    void OnTriggerStay (Collider other) { 
+        // Check if the object that collided with the door is the player
+        if (other.CompareTag ("MainCamera")){
+            // Check if the door is not already open
+            if (opened == false) {
+                // Check if the door is unlocked
+                if (locked == false){
+                    // Show the interaction text
+                    intText.SetActive (true);
+                    // Open the door if 'E' key is pressed
+                    if (Input.GetKeyDown (KeyCode.E)) {
+                        door_closed.SetActive (false);
+                        door_opened.SetActive (true); 
+                        intText.SetActive (false);
+                        // Start a coroutine to automatically close the door after some time
+                        StartCoroutine (repeat ());
+                        opened = true;
+                    }
                 }
-            }
-            else if (locked == true && hasKey == true) // Door is locked but player has the key
-            {
-                locked = false; // Unlock the door
-                intText.SetActive (true);
-                if (Input.GetKeyDown (KeyCode.E)) {
-                    Debug.Log("E key pressed");
-                    door_closed.SetActive (false);
-                    door_opened.SetActive (true); 
-                    intText.SetActive (false);
-                    StartCoroutine (repeat ());
-                    opened = true;
-                }
-            }
-            else if (locked == true && hasKey == false) // Door is locked and player doesn't have the key
-            {
-                if (lockedtext != null) // Check if lockedtext is assigned before using it
+                // Door is locked but player has the key
+                else if (locked == true && hasKey == true) 
                 {
-                    lockedtext.SetActive(true);
+                    locked = false; // Unlock the door
+                    intText.SetActive (true);
+                    // Open the door if 'E' key is pressed
+                    if (Input.GetKeyDown (KeyCode.E)) {
+                        door_closed.SetActive (false);
+                        door_opened.SetActive (true); 
+                        intText.SetActive (false);
+                        // Start a coroutine to automatically close the door after some time
+                        StartCoroutine (repeat ());
+                        opened = true;
+                    }
+                }
+                // Door is locked and player doesn't have the key
+                else if (locked == true && hasKey == false) 
+                {
+                    // Show the locked door text if the text object is assigned
+                    if (lockedtext != null) 
+                    {
+                        lockedtext.SetActive(true);
+                    }
                 }
             }
         }
     }
-}
 
-void OnTriggerExit (Collider other) { 
-    if (other.CompareTag ("MainCamera")){
-        intText.SetActive (false);
-         if (lockedtext != null) // Check if lockedtext is assigned before using it
-        {
-            lockedtext.SetActive(false);
+    // Triggers when player leaves the door's collider
+    void OnTriggerExit (Collider other) { 
+        if (other.CompareTag ("MainCamera")){
+            // Hide the interaction text
+            intText.SetActive (false);
+            // Hide the locked door text if the text object is assigned
+            if (lockedtext != null) 
+            {
+                lockedtext.SetActive(false);
+            }
         }
-    }
-} 
-IEnumerator repeat () {
-    yield return new WaitForSeconds (4.0f);
-    opened = false;
-    door_closed.SetActive (true);
-    door_opened.SetActive (false);
-    close.Play();
+    } 
+
+    // Coroutine to close the door after a delay
+    IEnumerator repeat () {
+        // Wait for 4 seconds
+        yield return new WaitForSeconds (4.0f);
+        // Change door state to closed
+        opened = false;
+        door_closed.SetActive (true);
+        door_opened.SetActive (false);
+        // Play the door close sound
+        close.Play();
     }
 }
